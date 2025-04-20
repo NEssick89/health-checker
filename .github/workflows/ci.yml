@@ -1,19 +1,29 @@
-name: Build Docker image
+name: Build and Push Docker Image
 
 on:
   push:
-    branch: [ main, master ]
+    branches: [ main, master ]
 
 jobs:
-  build:
-    runs-on: Ubuntu-latest
+  build-and-push:
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      code: actions/checkout@v3
+      uses: actions/checkout@v3
 
-    - name: Sut up Docker
+    - name: Set up Docker
       uses: docker/setup-buildx-action@v3
 
-    - name: Build Docker image
-      run: docker built -t health-checker .
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: nessick/health-checker:latest
